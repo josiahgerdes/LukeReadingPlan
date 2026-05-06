@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Luke Reading Plan</title>
+</head>
+<body>
+
+<h1>Luke Reading Plan</h1>
+<p id="progress-summary"></p>
+<button id="reset-btn">Reset Progress</button>
+
+<div id="plan"></div>
+
+<script>
+  const READINGS = [
+    { week: 1,  reading1: "Luke 1:1–38",    reading2: "Luke 1:39–80"   },
+    { week: 2,  reading1: "Luke 2:1–40",     reading2: "Luke 2:41–52; 3:1–38" },
+    { week: 3,  reading1: "Luke 4:1–44",     reading2: "Luke 5:1–39"   },
+    { week: 4,  reading1: "Luke 6:1–49",     reading2: "Luke 7:1–50"   },
+    { week: 5,  reading1: "Luke 8:1–56",     reading2: "Luke 9:1–50"   },
+    { week: 6,  reading1: "Luke 9:51–62; 10:1–42", reading2: "Luke 11:1–54" },
+    { week: 7,  reading1: "Luke 12:1–59",    reading2: "Luke 13:1–35"  },
+    { week: 8,  reading1: "Luke 14:1–35",    reading2: "Luke 15:1–32"  },
+    { week: 9,  reading1: "Luke 16:1–31",    reading2: "Luke 17:1–37"  },
+    { week: 10, reading1: "Luke 18:1–43",    reading2: "Luke 19:1–48"  },
+    { week: 11, reading1: "Luke 20:1–47",    reading2: "Luke 21:1–38"  },
+    { week: 12, reading1: "Luke 22:1–71",    reading2: "Luke 23:1–56; 24:1–53" },
+  ];
+
+  const COOKIE_KEY = "luke_reading_plan";
+  const COOKIE_DAYS = 365;
+
+  function setCookie(value) {
+    const expires = new Date(Date.now() + COOKIE_DAYS * 864e5).toUTCString();
+    document.cookie = `${COOKIE_KEY}=${encodeURIComponent(JSON.stringify(value))}; expires=${expires}; path=/; SameSite=Lax`;
+  }
+
+  function getCookie() {
+    const match = document.cookie.split("; ").find(c => c.startsWith(COOKIE_KEY + "="));
+    if (!match) return null;
+    try {
+      return JSON.parse(decodeURIComponent(match.split("=").slice(1).join("=")));
+    } catch {
+      return null;
+    }
+  }
+
+  function saveToCache(value) {
+    try {
+      localStorage.setItem(COOKIE_KEY, JSON.stringify(value));
+    } catch {}
+  }
+
+  function loadFromCache() {
+    try {
+      const raw = localStorage.getItem(COOKIE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function loadProgress() {
+    return getCookie() || loadFromCache() || {};
+  }
+
+  function saveProgress(progress) {
+    setCookie(progress);
+    saveToCache(progress);
+  }
+
+  let progress = loadProgress();
+
+  function completedCount() {
+    return Object.values(progress).filter(Boolean).length;
+  }
+
+  function updateSummary() {
+    const total = READINGS.length * 2;
+    const done = completedCount();
+    document.getElementById("progress-summary").textContent =
+      `${done} of ${total} readings completed`;
+  }
+
+  function toggleReading(key) {
+    progress[key] = !progress[key];
+    saveProgress(progress);
+    updateSummary();
+    const checkbox = document.querySelector(`input[data-key="${key}"]`);
+    if (checkbox) checkbox.checked = !!progress[key];
+    const label = checkbox && checkbox.closest("label");
+    if (label) label.dataset.done = progress[key] ? "true" : "false";
+  }
+
+  function render() {
+    const container = document.getElementById("plan");
+    container.innerHTML = "";
+
+    READINGS.forEach(({ week, reading1, reading2 }) => {
+      const section = document.createElement("section");
+      section.dataset.week = week;
+
+      const heading = document.createElement("h2");
+      heading.textContent = `Week ${week}`;
+      section.appendChild(heading);
+
+      [
+        { label: reading1, key: `w${week}_r1` },
+        { label: reading2, key: `w${week}_r2` },
+      ].forEach(({ label, key }) => {
+        const wrapper = document.createElement("div");
+
+        const lbl = document.createElement("label");
+        lbl.dataset.done = progress[key] ? "true" : "false";
+
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = !!progress[key];
+        cb.dataset.key = key;
+        cb.addEventListener("change", () => toggleReading(key));
+
+        const span = document.createElement("span");
+        span.textContent = label;
+
+        lbl.appendChild(cb);
+        lbl.appendChild(span);
+        wrapper.appendChild(lbl);
+        section.appendChild(wrapper);
+      });
+
+      container.appendChild(section);
+    });
+
+    updateSummary();
+  }
+
+  document.getElementById("reset-btn").addEventListener("click", () => {
+    if (confirm("Reset all reading progress?")) {
+      progress = {};
+      saveProgress(progress);
+      render();
+    }
+  });
+
+  render();
+</script>
+
+</body>
+</html>
