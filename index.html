@@ -4,12 +4,191 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Luke Reading Plan</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #e8e4de;
+      font-family: system-ui, -apple-system, sans-serif;
+      color: #1a1a1a;
+      min-height: 100vh;
+      padding: 3rem 2rem 4rem;
+    }
+
+    /* ── Header ── */
+    header {
+      margin-bottom: 2.5rem;
+    }
+
+    h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 900;
+      line-height: 1.1;
+      display: flex;
+      align-items: center;
+      gap: 0.35em;
+      flex-wrap: wrap;
+    }
+
+    .bubble {
+      background: #2d6db5;
+      color: #fff;
+      border-radius: 999px;
+      padding: 0.05em 0.35em 0.1em;
+      display: inline-block;
+    }
+
+    .header-meta {
+      margin-top: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    #progress-summary {
+      font-size: 1rem;
+      color: #555;
+      font-weight: 500;
+    }
+
+    #reset-btn {
+      background: transparent;
+      border: 1.5px solid #aaa;
+      border-radius: 999px;
+      padding: 0.35rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #666;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    #reset-btn:hover {
+      border-color: #555;
+      color: #333;
+    }
+
+    /* ── Grid ── */
+    #plan {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 900px) {
+      #plan { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 560px) {
+      #plan { grid-template-columns: 1fr; }
+    }
+
+    /* ── Week card ── */
+    .week-card {
+      background: #ede9e3;
+      border-radius: 1.4rem;
+      padding: 1.6rem 1.6rem 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .week-card[data-current="true"] {
+      outline: 2.5px solid #2d6db5;
+    }
+
+    .week-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .week-label {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #1a1a1a;
+    }
+
+    .week-date {
+      font-size: 0.85rem;
+      color: #777;
+      font-weight: 500;
+    }
+
+    .current-badge {
+      display: inline-block;
+      margin-top: 0.35rem;
+      background: #2d6db5;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      padding: 0.2em 0.65em;
+      width: fit-content;
+    }
+
+    /* ── Reading row ── */
+    .reading-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .reading-text {
+      font-size: 0.95rem;
+      color: #333;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .complete-btn {
+      align-self: flex-start;
+      background: #2d6db5;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 0.45rem 1.2rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+    }
+
+    .complete-btn:hover {
+      background: #245d9e;
+    }
+
+    .complete-btn[data-done="true"] {
+      background: #6b9e4e;
+    }
+
+    .complete-btn[data-done="true"]:hover {
+      background: #5a8940;
+    }
+
+    /* ── Divider between the two readings ── */
+    .reading-divider {
+      height: 1px;
+      background: #d5d0c9;
+    }
+  </style>
 </head>
 <body>
 
-<h1>Luke Reading Plan</h1>
-<p id="progress-summary"></p>
-<button id="reset-btn">Reset Progress</button>
+<header>
+  <h1>Reading <span class="bubble">Plan.</span></h1>
+  <div class="header-meta">
+    <p id="progress-summary"></p>
+    <button id="reset-btn">Reset Progress</button>
+  </div>
+</header>
 
 <div id="plan"></div>
 
@@ -63,105 +242,113 @@
     if (!match) return null;
     try {
       return JSON.parse(decodeURIComponent(match.split("=").slice(1).join("=")));
-    } catch {
-      return null;
-    }
+    } catch { return null; }
   }
 
   function saveToCache(value) {
-    try {
-      localStorage.setItem(COOKIE_KEY, JSON.stringify(value));
-    } catch {}
+    try { localStorage.setItem(COOKIE_KEY, JSON.stringify(value)); } catch {}
   }
 
   function loadFromCache() {
     try {
       const raw = localStorage.getItem(COOKIE_KEY);
       return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
+    } catch { return null; }
   }
 
   function loadProgress() {
     return getCookie() || loadFromCache() || {};
   }
 
-  function saveProgress(progress) {
-    setCookie(progress);
-    saveToCache(progress);
+  function saveProgress(p) {
+    setCookie(p);
+    saveToCache(p);
   }
 
   let progress = loadProgress();
 
-  function completedCount() {
-    return Object.values(progress).filter(Boolean).length;
-  }
-
   function updateSummary() {
     const total = READINGS.length * 2;
-    const done = completedCount();
+    const done = Object.values(progress).filter(Boolean).length;
     document.getElementById("progress-summary").textContent =
       `${done} of ${total} readings completed`;
   }
 
-  function toggleReading(key) {
+  function toggleReading(key, btn) {
     progress[key] = !progress[key];
     saveProgress(progress);
     updateSummary();
-    const checkbox = document.querySelector(`input[data-key="${key}"]`);
-    if (checkbox) checkbox.checked = !!progress[key];
-    const label = checkbox && checkbox.closest("label");
-    if (label) label.dataset.done = progress[key] ? "true" : "false";
+    const done = !!progress[key];
+    btn.dataset.done = done ? "true" : "false";
+    btn.textContent = done ? "Completed ✓" : "Mark Complete";
   }
 
   function render() {
     const container = document.getElementById("plan");
     container.innerHTML = "";
-
     const activeWeek = currentWeekNumber();
 
     READINGS.forEach(({ week, reading1, reading2 }) => {
-      const section = document.createElement("section");
-      section.dataset.week = week;
-      if (week === activeWeek) section.dataset.current = "true";
+      const card = document.createElement("article");
+      card.className = "week-card";
+      card.dataset.week = week;
+      if (week === activeWeek) card.dataset.current = "true";
 
-      const heading = document.createElement("h2");
-      const dateLabel = formatDate(weekStartDate(week));
-      heading.textContent = `Week ${week} — ${dateLabel}`;
+      // Week header
+      const hdr = document.createElement("div");
+      hdr.className = "week-header";
+
+      const lbl = document.createElement("div");
+      lbl.className = "week-label";
+      lbl.textContent = `Week ${week}`;
+
+      const dateEl = document.createElement("div");
+      dateEl.className = "week-date";
+      dateEl.textContent = formatDate(weekStartDate(week));
+
+      hdr.appendChild(lbl);
+      hdr.appendChild(dateEl);
+
       if (week === activeWeek) {
-        const badge = document.createElement("span");
-        badge.textContent = " (current week)";
-        badge.dataset.badge = "current";
-        heading.appendChild(badge);
+        const badge = document.createElement("div");
+        badge.className = "current-badge";
+        badge.textContent = "Current Week";
+        hdr.appendChild(badge);
       }
-      section.appendChild(heading);
 
+      card.appendChild(hdr);
+
+      // Reading rows
       [
-        { label: reading1, key: `w${week}_r1` },
-        { label: reading2, key: `w${week}_r2` },
-      ].forEach(({ label, key }) => {
-        const wrapper = document.createElement("div");
+        { text: reading1, key: `w${week}_r1` },
+        { text: reading2, key: `w${week}_r2` },
+      ].forEach(({ text, key }, i) => {
+        if (i === 1) {
+          const div = document.createElement("div");
+          div.className = "reading-divider";
+          card.appendChild(div);
+        }
 
-        const lbl = document.createElement("label");
-        lbl.dataset.done = progress[key] ? "true" : "false";
+        const row = document.createElement("div");
+        row.className = "reading-row";
 
-        const cb = document.createElement("input");
-        cb.type = "checkbox";
-        cb.checked = !!progress[key];
-        cb.dataset.key = key;
-        cb.addEventListener("change", () => toggleReading(key));
+        const passage = document.createElement("div");
+        passage.className = "reading-text";
+        passage.textContent = text;
 
-        const span = document.createElement("span");
-        span.textContent = label;
+        const done = !!progress[key];
+        const btn = document.createElement("button");
+        btn.className = "complete-btn";
+        btn.dataset.done = done ? "true" : "false";
+        btn.textContent = done ? "Completed ✓" : "Mark Complete";
+        btn.addEventListener("click", () => toggleReading(key, btn));
 
-        lbl.appendChild(cb);
-        lbl.appendChild(span);
-        wrapper.appendChild(lbl);
-        section.appendChild(wrapper);
+        row.appendChild(passage);
+        row.appendChild(btn);
+        card.appendChild(row);
       });
 
-      container.appendChild(section);
+      container.appendChild(card);
     });
 
     updateSummary();
