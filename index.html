@@ -73,17 +73,10 @@
 
     /* ── Grid ── */
     #plan {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      display: flex;
+      flex-direction: column;
       gap: 1.25rem;
-    }
-
-    @media (max-width: 900px) {
-      #plan { grid-template-columns: repeat(2, 1fr); }
-    }
-
-    @media (max-width: 560px) {
-      #plan { grid-template-columns: 1fr; }
+      max-width: 520px;
     }
 
     /* ── Week card ── */
@@ -206,18 +199,18 @@
   }
 
   const READINGS = [
-    { week: 1,  reading1: "Luke 1:1–38",          reading2: "Luke 1:39–80"          },
-    { week: 2,  reading1: "Luke 2:1–40",           reading2: "Luke 2:41–52; 3:1–38"  },
-    { week: 3,  reading1: "Luke 4:1–44",           reading2: "Luke 5:1–39"           },
-    { week: 4,  reading1: "Luke 6:1–49",           reading2: "Luke 7:1–50"           },
-    { week: 5,  reading1: "Luke 8:1–56",           reading2: "Luke 9:1–50"           },
-    { week: 6,  reading1: "Luke 9:51–62; 10:1–42", reading2: "Luke 11:1–54"          },
-    { week: 7,  reading1: "Luke 12:1–59",          reading2: "Luke 13:1–35"          },
-    { week: 8,  reading1: "Luke 14:1–35",          reading2: "Luke 15:1–32"          },
-    { week: 9,  reading1: "Luke 16:1–31",          reading2: "Luke 17:1–37"          },
-    { week: 10, reading1: "Luke 18:1–43",          reading2: "Luke 19:1–48"          },
-    { week: 11, reading1: "Luke 20:1–47",          reading2: "Luke 21:1–38"          },
-    { week: 12, reading1: "Luke 22:1–71",          reading2: "Luke 23:1–56; 24:1–53" },
+    { week: 1,  reading1: "Luke 1",  reading2: "Luke 2"  },
+    { week: 2,  reading1: "Luke 3",  reading2: "Luke 4"  },
+    { week: 3,  reading1: "Luke 5",  reading2: "Luke 6"  },
+    { week: 4,  reading1: "Luke 7",  reading2: "Luke 8"  },
+    { week: 5,  reading1: "Luke 9",  reading2: "Luke 10" },
+    { week: 6,  reading1: "Luke 11", reading2: "Luke 12" },
+    { week: 7,  reading1: "Luke 13", reading2: "Luke 14" },
+    { week: 8,  reading1: "Luke 15", reading2: "Luke 16" },
+    { week: 9,  reading1: "Luke 17", reading2: "Luke 18" },
+    { week: 10, reading1: "Luke 19", reading2: "Luke 20" },
+    { week: 11, reading1: "Luke 21", reading2: "Luke 22" },
+    { week: 12, reading1: "Luke 23", reading2: "Luke 24" },
   ];
 
   function currentWeekNumber() {
