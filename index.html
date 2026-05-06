@@ -20,6 +20,7 @@
     /* ── Header ── */
     header {
       margin-bottom: 2.5rem;
+      position: relative;
     }
 
     h1 {
@@ -42,10 +43,6 @@
 
     .header-meta {
       margin-top: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      flex-wrap: wrap;
     }
 
     #progress-summary {
@@ -54,23 +51,76 @@
       font-weight: 500;
     }
 
-    #reset-btn {
-      background: transparent;
-      border: 1.5px solid #aaa;
-      border-radius: 999px;
-      padding: 0.35rem 1rem;
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: #666;
+    /* ── Hamburger menu ── */
+    #menu-wrap {
+      position: fixed;
+      top: 1.25rem;
+      right: 1.25rem;
+      z-index: 100;
+    }
+
+    #hamburger {
+      background: #ece8e4;
+      border: none;
+      border-radius: 0.75rem;
+      width: 2.6rem;
+      height: 2.6rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
       cursor: pointer;
-      transition: border-color 0.15s, color 0.15s;
+      box-shadow: -4px 7px 20px -4px #0000001a;
+    }
+
+    #hamburger span {
+      display: block;
+      width: 18px;
+      height: 2px;
+      background: #1a1a1a;
+      border-radius: 2px;
+      transition: opacity 0.15s;
+    }
+
+    #hamburger:hover span {
+      opacity: 0.6;
+    }
+
+    #menu-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 0.5rem);
+      right: 0;
+      background: #ece8e4;
+      border-radius: 0.9rem;
+      box-shadow: -4px 7px 20px -4px #0000001a;
+      overflow: hidden;
+      min-width: 160px;
+    }
+
+    #menu-dropdown.open {
+      display: block;
+    }
+
+    #reset-btn {
+      display: block;
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 0.85rem 1.1rem;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #c0392b;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.15s;
     }
 
     #reset-btn:hover {
-      border-color: #555;
-      color: #333;
+      background: #e0dbd5;
     }
 
     /* ── Grid ── */
@@ -178,11 +228,19 @@
 </head>
 <body>
 
+<div id="menu-wrap">
+  <button id="hamburger" aria-label="Menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <div id="menu-dropdown" role="menu">
+    <button id="reset-btn" role="menuitem">Reset Progress</button>
+  </div>
+</div>
+
 <header>
   <h1>Reading <span class="bubble">Plan.</span></h1>
   <div class="header-meta">
     <p id="progress-summary"></p>
-    <button id="reset-btn">Reset Progress</button>
   </div>
 </header>
 
@@ -350,7 +408,25 @@
     updateSummary();
   }
 
+  const hamburger = document.getElementById("hamburger");
+  const menuDropdown = document.getElementById("menu-dropdown");
+
+  hamburger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const open = menuDropdown.classList.toggle("open");
+    hamburger.setAttribute("aria-expanded", open);
+  });
+
+  document.addEventListener("click", () => {
+    menuDropdown.classList.remove("open");
+    hamburger.setAttribute("aria-expanded", "false");
+  });
+
+  menuDropdown.addEventListener("click", (e) => e.stopPropagation());
+
   document.getElementById("reset-btn").addEventListener("click", () => {
+    menuDropdown.classList.remove("open");
+    hamburger.setAttribute("aria-expanded", "false");
     if (confirm("Reset all reading progress?")) {
       progress = {};
       saveProgress(progress);
