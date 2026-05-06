@@ -14,20 +14,41 @@
 <div id="plan"></div>
 
 <script>
+  const START_DATE = new Date("2026-05-17");
+
+  function weekStartDate(weekNumber) {
+    const d = new Date(START_DATE);
+    d.setDate(d.getDate() + (weekNumber - 1) * 7);
+    return d;
+  }
+
+  function formatDate(d) {
+    return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  }
+
   const READINGS = [
-    { week: 1,  reading1: "Luke 1:1–38",    reading2: "Luke 1:39–80"   },
-    { week: 2,  reading1: "Luke 2:1–40",     reading2: "Luke 2:41–52; 3:1–38" },
-    { week: 3,  reading1: "Luke 4:1–44",     reading2: "Luke 5:1–39"   },
-    { week: 4,  reading1: "Luke 6:1–49",     reading2: "Luke 7:1–50"   },
-    { week: 5,  reading1: "Luke 8:1–56",     reading2: "Luke 9:1–50"   },
-    { week: 6,  reading1: "Luke 9:51–62; 10:1–42", reading2: "Luke 11:1–54" },
-    { week: 7,  reading1: "Luke 12:1–59",    reading2: "Luke 13:1–35"  },
-    { week: 8,  reading1: "Luke 14:1–35",    reading2: "Luke 15:1–32"  },
-    { week: 9,  reading1: "Luke 16:1–31",    reading2: "Luke 17:1–37"  },
-    { week: 10, reading1: "Luke 18:1–43",    reading2: "Luke 19:1–48"  },
-    { week: 11, reading1: "Luke 20:1–47",    reading2: "Luke 21:1–38"  },
-    { week: 12, reading1: "Luke 22:1–71",    reading2: "Luke 23:1–56; 24:1–53" },
+    { week: 1,  reading1: "Luke 1:1–38",          reading2: "Luke 1:39–80"          },
+    { week: 2,  reading1: "Luke 2:1–40",           reading2: "Luke 2:41–52; 3:1–38"  },
+    { week: 3,  reading1: "Luke 4:1–44",           reading2: "Luke 5:1–39"           },
+    { week: 4,  reading1: "Luke 6:1–49",           reading2: "Luke 7:1–50"           },
+    { week: 5,  reading1: "Luke 8:1–56",           reading2: "Luke 9:1–50"           },
+    { week: 6,  reading1: "Luke 9:51–62; 10:1–42", reading2: "Luke 11:1–54"          },
+    { week: 7,  reading1: "Luke 12:1–59",          reading2: "Luke 13:1–35"          },
+    { week: 8,  reading1: "Luke 14:1–35",          reading2: "Luke 15:1–32"          },
+    { week: 9,  reading1: "Luke 16:1–31",          reading2: "Luke 17:1–37"          },
+    { week: 10, reading1: "Luke 18:1–43",          reading2: "Luke 19:1–48"          },
+    { week: 11, reading1: "Luke 20:1–47",          reading2: "Luke 21:1–38"          },
+    { week: 12, reading1: "Luke 22:1–71",          reading2: "Luke 23:1–56; 24:1–53" },
   ];
+
+  function currentWeekNumber() {
+    const now = new Date();
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+    const diff = now - START_DATE;
+    if (diff < 0) return null;
+    const week = Math.floor(diff / msPerWeek) + 1;
+    return week > 12 ? null : week;
+  }
 
   const COOKIE_KEY = "luke_reading_plan";
   const COOKIE_DAYS = 365;
@@ -98,12 +119,22 @@
     const container = document.getElementById("plan");
     container.innerHTML = "";
 
+    const activeWeek = currentWeekNumber();
+
     READINGS.forEach(({ week, reading1, reading2 }) => {
       const section = document.createElement("section");
       section.dataset.week = week;
+      if (week === activeWeek) section.dataset.current = "true";
 
       const heading = document.createElement("h2");
-      heading.textContent = `Week ${week}`;
+      const dateLabel = formatDate(weekStartDate(week));
+      heading.textContent = `Week ${week} — ${dateLabel}`;
+      if (week === activeWeek) {
+        const badge = document.createElement("span");
+        badge.textContent = " (current week)";
+        badge.dataset.badge = "current";
+        heading.appendChild(badge);
+      }
       section.appendChild(heading);
 
       [
